@@ -1,0 +1,250 @@
+import React, { useState, useEffect, useCallback } from "react";
+import { BookRequirement } from "@/entities/BookRequirement";
+import { Button } from "@/components/ui/button";
+import { Plus, Search } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+
+import RequirementCard from "../components/requirements/RequirementCard";
+import RequirementForm from "../components/requirements/RequirementForm";
+
+export default function KebutuhanBukuPage() {
+    const [requirements, setRequirements] = useState([]);
+    const [filteredRequirements, setFilteredRequirements] = useState([]);
+    const [searchQuery, setSearchQuery] = useState("");
+    const [showForm, setShowForm] = useState(false);
+    const [editingRequirement, setEditingRequirement] = useState(null);
+    const [isLoading, setIsLoading] = useState(true);
+
+    const loadRequirements = async () => {
+        setIsLoading(true);
+        try {
+            const fetchedRequirements = await BookRequirement.list('-created_date');
+            setRequirements(fetchedRequirements);
+        } catch (error) {
+            console.error("Error loading requirements:", error);
+        }
+        setIsLoading(false);
+    };
+
+    useEffect(() => {
+        loadRequirements();
+    }, []);
+
+    const filterRequirements = useCallback(() => {
+        if (!searchQuery) {
+            setFilteredRequirements(requirements);
+            return;
+        }
+
+        const filtered = requirements.filter(req =>
+            req.title?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            req.author?.toLowerCase().includes(searchQuery.toLowerCase())
+        );
+        setFilteredRequirements(filtered);
+    }, [requirements, searchQuery]);
+
+    useEffect(() => {
+        filterRequirements();
+    }, [filterRequirements]);
+
+    const handleSubmit = async (requirementData) => {
+        try {
+            if (editingRequirement) {
+                await BookRequirement.update(editingRequirement.id, requirementData);
+            } else {
+                await BookRequirement.create(requirementData);
+            }
+            setShowForm(false);
+            setEditingRequirement(null);
+            loadRequirements();
+        } catch (error) {
+            console.error("Error saving requirement:", error);
+        }
+    };
+
+    const handleEdit = (requirement) => {
+        setEditingRequirement(requirement);
+        setShowForm(true);
+    };
+
+    const handleStatusUpdate = async (requirementId, newStatus) => {
+        try {
+            const requirement = requirements.find(r => r.id === requirementId);
+            await BookRequirement.update(requirementId, { ...requirement, status: newStatus });
+            loadRequirements();
+        } catch (error) {
+            console.error("Error updating status:", error);
+        }
+    };
+
+    const getStatistics = () => {
+        const totalRequirements = requirements.length;
+        const pendingRequirements = requirements.filter(r => r.status === 'pending').length;
+        const totalEstimatedCost = requirements.reduce((sum, r) => sum + ((r.estimated_price || 0) * (r.quantity_needed || 1)), 0);
+        return { totalRequirements, pendingRequirements, totalEstimatedCost };
+    };
+
+    if (isLoading) {
+        return (
+            <div className="min-h-screen p-6 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-blue-700">Memuat kebutuhan buku...</p>
+                </div>
+            </div>
+        );
+    }
+
+    const stats = getStatistics();
+
+    return (
+        <div className="min-h-screen p-4 md:p-8 bg-slate-50">
+            <div className="max-w-7xl mx-auto">
+                <motion.div
+                    initial={{ opacity: 0, y: -20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4"
+                >
+                    <div>
+                        <h1 className="text-3xl font-bold text-slate-900 mb-2">Kebutuhan Buku</h1>
+                        <p className="text-slate-600">Kelola daftar buku yang dibutuhkan</p>
+                    </div>
+                    <Button 
+                        onClick={() => setShowForm(!showForm)}
+                        className="bg-blue-600 hover:bg-blue-700 text-white"
+                    >
+                        <Plus className="w-5 h-5 mr-2" />
+                        Tambah Kebutuhan
+                    </Button>
+                </motion.div>
+
+                {/* Statistics Cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.1 }}
+                    >
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-blue-600">{stats.totalRequirements}</p>
+                                    <p className="text-sm text-slate-600">Total Kebutuhan</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.2 }}
+                    >
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-orange-600">{stats.pendingRequirements}</p>
+                                    <p className="text-sm text-slate-600">Pending</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+
+                    <motion.div
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.3 }}
+                    >
+                        <Card>
+                            <CardContent className="p-6">
+                                <div className="text-center">
+                                    <p className="text-2xl font-bold text-green-600">
+                                        Rp {stats.totalEstimatedCost.toLocaleString('id-ID')}
+                                    </p>
+                                    <p className="text-sm text-slate-600">Estimasi Budget</p>
+                                </div>
+                            </CardContent>
+                        </Card>
+                    </motion.div>
+                </div>
+
+                <AnimatePresence>
+                    {showForm && (
+                        <motion.div
+                            initial={{ opacity: 0, height: 0 }}
+                            animate={{ opacity: 1, height: "auto" }}
+                            exit={{ opacity: 0, height: 0 }}
+                            className="mb-8 overflow-hidden"
+                        >
+                            <RequirementForm
+                                requirement={editingRequirement}
+                                onSubmit={handleSubmit}
+                                onCancel={() => {
+                                    setShowForm(false);
+                                    setEditingRequirement(null);
+                                }}
+                            />
+                        </motion.div>
+                    )}
+                </AnimatePresence>
+
+                <motion.div
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ delay: 0.4 }}
+                >
+                    <Card>
+                        <CardHeader>
+                            <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+                                <CardTitle>Daftar Kebutuhan ({filteredRequirements.length})</CardTitle>
+                                <div className="relative w-full md:w-80">
+                                    <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-slate-400 w-4 h-4" />
+                                    <Input
+                                        placeholder="Cari judul atau penulis..."
+                                        value={searchQuery}
+                                        onChange={(e) => setSearchQuery(e.target.value)}
+                                        className="pl-10"
+                                    />
+                                </div>
+                            </div>
+                        </CardHeader>
+                        <CardContent>
+                            {filteredRequirements.length === 0 ? (
+                                <div className="text-center py-16">
+                                    <p className="text-slate-500">
+                                        {requirements.length === 0 
+                                            ? "Belum ada kebutuhan buku yang ditambahkan"
+                                            : "Tidak ada kebutuhan yang cocok dengan pencarian"
+                                        }
+                                    </p>
+                                </div>
+                            ) : (
+                                <div className="grid gap-6">
+                                    <AnimatePresence>
+                                        {filteredRequirements.map((requirement, index) => (
+                                            <motion.div
+                                                key={requirement.id}
+                                                initial={{ opacity: 0, y: 20 }}
+                                                animate={{ opacity: 1, y: 0 }}
+                                                exit={{ opacity: 0, scale: 0.9 }}
+                                                transition={{ delay: index * 0.05 }}
+                                            >
+                                                <RequirementCard
+                                                    requirement={requirement}
+                                                    onEdit={handleEdit}
+                                                    onStatusUpdate={handleStatusUpdate}
+                                                />
+                                            </motion.div>
+                                        ))}
+                                    </AnimatePresence>
+                                </div>
+                            )}
+                        </CardContent>
+                    </Card>
+                </motion.div>
+            </div>
+        </div>
+    );
+}

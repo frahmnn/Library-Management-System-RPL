@@ -1,0 +1,98 @@
+{
+  "name": "Book",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Judul buku"
+    },
+    "author": {
+      "type": "string",
+      "description": "Nama penulis"
+    },
+    "isbn": {
+      "type": "string",
+      "description": "Nomor ISBN"
+    },
+    "publisher": {
+      "type": "string",
+      "description": "Penerbit"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "fiksi",
+        "non_fiksi",
+        "biografi",
+        "sejarah",
+        "sains",
+        "teknologi",
+        "bisnis",
+        "self_help",
+        "romance",
+        "mystery",
+        "fantasy",
+        "horror",
+        "komedi",
+        "drama",
+        "petualangan",
+        "agama",
+        "anak",
+        "kuliner",
+        "seni",
+        "lainnya"
+      ],
+      "default": "fiksi",
+      "description": "Kategori buku"
+    },
+    "year": {
+      "type": "number",
+      "description": "Tahun terbit"
+    },
+    "pages": {
+      "type": "number",
+      "description": "Jumlah halaman"
+    },
+    "price": {
+      "type": "number",
+      "description": "Harga buku"
+    },
+    "stock_current": {
+      "type": "number",
+      "default": 0,
+      "description": "Stok saat ini"
+    },
+    "stock_minimum": {
+      "type": "number",
+      "default": 1,
+      "description": "Stok minimum"
+    },
+    "location": {
+      "type": "string",
+      "description": "Lokasi penyimpanan buku"
+    },
+    "condition": {
+      "type": "string",
+      "enum": [
+        "baru",
+        "baik",
+        "rusak_ringan",
+        "rusak_berat"
+      ],
+      "default": "baru",
+      "description": "Kondisi buku"
+    },
+    "description": {
+      "type": "string",
+      "description": "Deskripsi buku"
+    },
+    "cover_url": {
+      "type": "string",
+      "description": "URL gambar sampul"
+    }
+  },
+  "required": [
+    "title",
+    "author"
+  ]
+}

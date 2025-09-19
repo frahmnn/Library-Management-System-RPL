@@ -1,0 +1,93 @@
+{
+  "name": "BookRequirement",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string",
+      "description": "Judul buku yang dibutuhkan"
+    },
+    "author": {
+      "type": "string",
+      "description": "Nama penulis"
+    },
+    "isbn": {
+      "type": "string",
+      "description": "Nomor ISBN"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "fiksi",
+        "non_fiksi",
+        "biografi",
+        "sejarah",
+        "sains",
+        "teknologi",
+        "bisnis",
+        "self_help",
+        "romance",
+        "mystery",
+        "fantasy",
+        "horror",
+        "komedi",
+        "drama",
+        "petualangan",
+        "agama",
+        "anak",
+        "kuliner",
+        "seni",
+        "lainnya"
+      ],
+      "default": "fiksi",
+      "description": "Kategori buku"
+    },
+    "quantity_needed": {
+      "type": "number",
+      "default": 1,
+      "description": "Jumlah yang dibutuhkan"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "tinggi",
+        "sedang",
+        "rendah"
+      ],
+      "default": "sedang",
+      "description": "Prioritas kebutuhan"
+    },
+    "estimated_price": {
+      "type": "number",
+      "description": "Estimasi harga"
+    },
+    "reason": {
+      "type": "string",
+      "description": "Alasan membutuhkan buku ini"
+    },
+    "target_date": {
+      "type": "string",
+      "format": "date",
+      "description": "Target tanggal pengadaan"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "ordered",
+        "received",
+        "cancelled"
+      ],
+      "default": "pending",
+      "description": "Status pengadaan"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Catatan tambahan"
+    }
+  },
+  "required": [
+    "title",
+    "author",
+    "quantity_needed"
+  ]
+}
